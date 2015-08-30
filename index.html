@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta http-equiv="content-type" content="text/html; charset=UTF-8"> 
+        <meta charset="utf-8">
+        <title>D3 Timeline Chart</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+		<script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/d3/3.3.11/d3.min.js"></script>
+		<link rel="stylesheet" href="style.css" />
+
+    </head>
+	<body>
+		<div class="container">
+			<h3> Timeline chart example</h3>
+			<div id="timeline">
+			</div>
+			<div id="timelineLegend">
+				<span>Odysseus</span> &nbsp;&nbsp;&nbsp;
+				<span>Dilligence Vault</span>&nbsp;&nbsp;&nbsp;
+				<span>citi</span>&nbsp;&nbsp;&nbsp;
+				<span>Navyug</span>&nbsp;&nbsp;&nbsp;
+				<span>Recruit Box</span>&nbsp;&nbsp;&nbsp;
+			</div>
+			
+		</div>
+		<script type="text/javascript" src="d3.tip.js"></script>
+		<script type="text/javascript" src="d3-timeline.js"></script>
+		<script type="text/javascript" src="d3-timeline.wrapper.js"></script>
+		<script type="text/javascript">
+	
+		var companies = ["Odysseus", "Dilligence Vault", "citi", "Navyug", "Recruit Box"];
+		var data = [{
+				label : "Mitesh",
+				times : [{
+						company : "Odysseus",
+						"starting_time" : 1338489000000,
+						"ending_time" : 1425148200000
+					}, {
+						company : "Dilligence Vault",
+						"starting_time" : 1406831400000,
+						"ending_time" : 1440613800000
+					}
+				]
+			}, {
+				label : "Mudassir",
+				times : [{
+						company : "Navyug",
+						"starting_time" : 1262284200000,
+						"ending_time" : 1356978600000
+					}, {
+						company : "Recruit Box",
+						"starting_time" : 1357078600000,
+						"ending_time" : 1388514600000
+					}, {
+						company : "Dilligence Vault",
+						"starting_time" : 1388514600000,
+						"ending_time" : 1440613800000
+					}
+				]
+			}, {
+				label : "Monel",
+				times : [{
+						company : "citi",
+						"starting_time" : 1262284200000,
+						"ending_time" : 1356978600000
+					}, {
+						company : "Dilligence Vault",
+						"starting_time" : 1356978600000,
+						"ending_time" : 1440613800000
+					}
+				]
+			}
+		];
+
+		var colorScale = d3.scale.ordinal().range(['rgba(30,144,255,0.5)', 'rgba(193,28,28,0.5)', 'rgba(0,153,76,0.5)', 'rgba(204,102,0,0.5)', 'rgba(51,28,190,0.5)'])
+			.domain(['Odysseus', 'Dilligence Vault', 'citi', 'Navyug', 'Recruit Box']);
+		
+		var chart = d3.timeline()
+			.stack()
+			.colors(colorScale)
+			.colorProperty('company')
+			.margin({left : 90,right : 30,top : 0,bottom : 0})
+			.itemHeight(20)
+			.itemMargin(10)
+			.tickFormat({
+				format : function (d) {
+					return d3.time.format("%Y")(d)
+				},
+				tickTime : d3.time.years,
+				tickInterval : 1,
+				tickSize : 10
+			})
+			.mouseover(function (d, i, datum) {
+				tip.show(d);
+			})
+			.mouseout(function (d, i, datum) {
+				tip.hide(d);
+			});
+		//adding colors and click handler to legends. Didn't work on re-rendering of chart for now 
+		d3.selectAll('#timelineLegend span')
+		.data(companies)
+		.style('color', function (d, i) {
+			return chart.colors()(i);
+		})
+		.style('cursor', 'pointer')
+		.on('click', (function () {
+				alert("click");
+			}))
+
+		//tooltip
+		var tip = d3.tip()
+			.attr('class', 'd3-tip')
+			.offset([-10, 0])
+			.html(function (d) {
+				var color = chart.colors()(d.company);
+				this.style('color', '#000').style('background-color', 'rgba(255,255,255,0.85)').style('border', '2px solid ' + color)
+				.style('transition', '0.7s').style('border-radius', '3px');
+				var format = d3.time.format('%x');
+				return d.company + ", " + format(new Date(d.starting_time)) + " - " + format(new Date(d.ending_time));
+			});
+		
+		function buildChart(){
+			var svg = d3.select("#timeline").html('').append("svg").attr("width", 500)
+			.datum(data).call(chart);
+
+			//register tooltip
+			svg.call(tip);
+		}
+		buildChart();
+		
+		</script>
+	</body>
+</html>
