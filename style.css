@@ -12,6 +12,7 @@
   font-size: 12px;
 }  
 #timelineLegend{margin-top:20px;font-weight:bold;}
+#timelineLegend label.disabled{text-decoration:line-through}
 .d3-tip {
   line-height: 1;
   font-weight: bold;

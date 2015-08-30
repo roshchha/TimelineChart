@@ -15,11 +15,11 @@
 			<div id="timeline">
 			</div>
 			<div id="timelineLegend">
-				<span>Odysseus</span> &nbsp;&nbsp;&nbsp;
-				<span>Dilligence Vault</span>&nbsp;&nbsp;&nbsp;
-				<span>citi</span>&nbsp;&nbsp;&nbsp;
-				<span>Navyug</span>&nbsp;&nbsp;&nbsp;
-				<span>Recruit Box</span>&nbsp;&nbsp;&nbsp;
+				<label>Odysseus</label> &nbsp;&nbsp;&nbsp;
+				<label>Dilligence Vault</label>&nbsp;&nbsp;&nbsp;
+				<label>citi</label>&nbsp;&nbsp;&nbsp;
+				<label>Navyug</label>&nbsp;&nbsp;&nbsp;
+				<label>Recruit Box</label>&nbsp;&nbsp;&nbsp;
 			</div>
 			
 		</div>
@@ -28,7 +28,8 @@
 		<script type="text/javascript" src="d3-timeline.wrapper.js"></script>
 		<script type="text/javascript">
 	
-		var companies = ["Odysseus", "Dilligence Vault", "citi", "Navyug", "Recruit Box"];
+		var legends = ["Odysseus", "Dilligence Vault", "citi", "Navyug", "Recruit Box"];
+		var deletedLegends = [];
 		var data = [{
 				label : "Mitesh",
 				times : [{
@@ -97,14 +98,31 @@
 				tip.hide(d);
 			});
 		//adding colors and click handler to legends. Didn't work on re-rendering of chart for now 
-		d3.selectAll('#timelineLegend span')
-		.data(companies)
+		d3.selectAll('#timelineLegend label')
+		.data(legends)
+		.attr('checked','true')
+		.attr('data',function(d,i){return d;})
 		.style('color', function (d, i) {
 			return chart.colors()(i);
 		})
 		.style('cursor', 'pointer')
 		.on('click', (function () {
-				alert("click");
+				var _this = d3.select(this);
+				var data = _this.attr('data');
+				if(_this.attr('checked') == "true"){
+					_this.attr('checked','false');
+					_this.attr('class','disabled');
+					deletedLegends.push(data);
+				}
+				else{
+					_this.attr('checked','true');
+					_this.attr('class','');
+					var index = deletedLegends.indexOf(data);
+					if(index > -1){
+						deletedLegends.splice(index,1);
+					}
+				}
+				ReBuildChart();
 			}))
 
 		//tooltip
@@ -119,13 +137,47 @@
 				return d.company + ", " + format(new Date(d.starting_time)) + " - " + format(new Date(d.ending_time));
 			});
 		
-		function buildChart(){
+		function buildChart(d){
+			d = d || data;
 			var svg = d3.select("#timeline").html('').append("svg").attr("width", 500)
-			.datum(data).call(chart);
+			.datum(d).call(chart);
 
 			//register tooltip
 			svg.call(tip);
 		}
+		function ReBuildChart(){
+			var _data = deepObjCopy(data);
+			for(var i in _data){
+				for(var j in _data[i].times){
+					if(deletedLegends.indexOf(_data[i].times[j].company) > -1)
+					{
+						_data[i].times.splice(j,1);
+						
+					}
+				}
+			}
+			buildChart(_data);
+		}
+		function deepObjCopy(dupeObj) {
+			var retObj = new Object();
+			if (typeof(dupeObj) == 'object') {
+				if (typeof(dupeObj.length) != 'undefined')
+					var retObj = new Array();
+				for (var objInd in dupeObj) {
+					if (typeof(dupeObj[objInd]) == 'object') {
+						retObj[objInd] = deepObjCopy(dupeObj[objInd]);
+					} else if (typeof(dupeObj[objInd]) == 'string') {
+						retObj[objInd] = dupeObj[objInd];
+					} else if (typeof(dupeObj[objInd]) == 'number') {
+						retObj[objInd] = dupeObj[objInd];
+					} else if (typeof(dupeObj[objInd]) == 'boolean') {
+						((dupeObj[objInd] == true) ? retObj[objInd] = true : retObj[objInd] = false);
+					}
+				}
+			}
+			return retObj;
+		}
+
 		buildChart();
 		
 		</script>
